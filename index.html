@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Walk the Data — Route 1</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,700;1,400;1,700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --paper:  #F7F5F0;
+  --white:  #FFFFFF;
+  --ink:    #111111;
+  --ink-2:  #444444;
+  --ink-3:  #888888;
+  --rule:   #DDDBD5;
+  --accent: #0875F9;
+  --neg:    #ED4347;
+  --pos:    #41CE69;
+  --zero:   #888888;
+  --shadow: 0 2px 24px rgba(17,17,17,0.07);
+  --r:      4px;
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+
+body {
+  font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background:var(--paper);
+  color:var(--ink);
+  min-height:100vh;
+  padding-bottom:90px;
+}
+
+/* ── HEADER ── */
+header {
+  position:sticky; top:0; z-index:200;
+  background:var(--ink);
+  padding:12px 32px;
+  display:flex; align-items:center; gap:24px;
+}
+.h-logo img {
+  height:32px; width:auto; object-fit:contain;
+  filter:invert(1);
+}
+.h-divider { width:1px; height:24px; background:rgba(255,255,255,0.2); flex-shrink:0; }
+.h-prog { flex:1; min-width:100px; }
+.h-prog-lbl {
+  font-size:0.62rem; font-weight:600; letter-spacing:0.12em;
+  text-transform:uppercase; color:rgba(255,255,255,0.4); margin-bottom:5px;
+}
+.h-bar-bg { background:rgba(255,255,255,0.15); border-radius:99px; height:2px; overflow:hidden; }
+.h-bar-fill {
+  background:#fff; height:100%; border-radius:99px;
+  transition:width 0.5s cubic-bezier(.4,0,.2,1);
+}
+
+/* ── LAYOUT ── */
+main { max-width:720px; margin:0 auto; padding:44px 20px 0; }
+
+/* ── CARD ── */
+.card,.intro-card,.success-card {
+  background:var(--white);
+  border:1px solid var(--rule);
+  border-radius:var(--r);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  display:none;
+  animation:rise 0.3s cubic-bezier(.4,0,.2,1);
+}
+.card.active,.intro-card.active,.success-card.active { display:block; }
+@keyframes rise { from{opacity:0;transform:translateY(14px);} to{opacity:1;transform:translateY(0);} }
+
+/* ── INTRO EYEBROW ── */
+.intro-eyebrow {
+  background:var(--ink);
+  padding:9px 36px;
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+}
+.intro-eyebrow span {
+  font-size:0.62rem; letter-spacing:0.16em;
+  text-transform:uppercase; color:rgba(255,255,255,0.45);
+}
+.intro-eyebrow strong {
+  font-size:0.62rem; letter-spacing:0.16em;
+  text-transform:uppercase; color:#fff; font-weight:600;
+}
+
+/* ── INTRO BODY ── */
+.intro-body { padding:42px 36px 32px; }
+.intro-title {
+  font-size:clamp(2.4rem,6vw,3.4rem);
+  font-weight:700; line-height:1.0; letter-spacing:-0.03em;
+  color:var(--ink); margin-bottom:32px;
+}
+.intro-title em { font-style:italic; color:var(--accent); font-weight:700; }
+.intro-text { font-size:0.97rem; line-height:1.75; color:var(--ink-2); max-width:540px; }
+.intro-text p+p { margin-top:1.1em; }
+
+/* ── LOADS BLOCK ── */
+.loads-block {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:1px; background:var(--rule);
+  border-top:1px solid var(--rule); border-bottom:1px solid var(--rule);
+}
+.load-cell {
+  background:var(--white);
+  padding:40px 20px 32px;
+  display:flex; flex-direction:column; align-items:center; gap:16px;
+  text-align:center;
+}
+.load-cell img {
+  width:100px; height:100px; object-fit:contain;
+  filter:invert(1); opacity:0.85;
+}
+.load-cell-label {
+  font-size:1rem; font-weight:700; color:var(--ink);
+}
+.load-cell-desc {
+  font-size:0.72rem; line-height:1.5;
+  color:var(--ink-3); max-width:130px;
+}
+
+/* ── SPONSOR STRIP ── */
+.sponsor-strip {
+  padding:24px 36px;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:20px; flex-wrap:wrap;
+  border-top:1px solid var(--rule);
+}
+.sp-left { display:flex; flex-direction:column; gap:8px; }
+.sp-with {
+  font-size:0.62rem; font-weight:700; letter-spacing:0.14em;
+  text-transform:uppercase; color:var(--ink-3);
+}
+.sp-left img { height:32px; width:auto; object-fit:contain; }
+.sp-right { display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+.sp-right img { height:22px; width:auto; object-fit:contain; }
+
+/* ── SEGMENT HEADER ── */
+.seg-bar {
+  border-bottom:1px solid var(--rule);
+  padding:20px 36px;
+  display:flex; align-items:baseline; gap:16px;
+}
+.seg-num {
+  font-size:0.62rem; font-weight:600; letter-spacing:0.15em;
+  text-transform:uppercase; color:var(--ink-3); flex-shrink:0;
+  font-family:'Roboto Mono','Courier New',monospace;
+}
+.seg-name { font-size:1.2rem; font-weight:700; color:var(--ink); }
+
+/* ── RATINGS ── */
+.ratings-area { padding:26px 36px 8px; }
+.rating-row   { margin-bottom:26px; }
+
+.rating-head  { display:flex; align-items:center; gap:10px; margin-bottom:11px; }
+.r-icon       {
+  width:28px; height:28px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+}
+.r-icon img   { width:28px; height:28px; object-fit:contain; filter:invert(1) brightness(0.6); }
+
+.rating-name  {
+  font-size:0.76rem; font-weight:700;
+  text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-2);
+}
+
+/* info button */
+.info-btn {
+  width:18px; height:18px; border-radius:50%;
+  border:1.5px solid var(--rule); background:transparent;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  position:relative; flex-shrink:0;
+  transition:border-color 0.15s, background 0.15s;
+}
+.info-btn:hover { border-color:var(--accent); background:#EEF5FF; }
+.info-btn svg { display:block; pointer-events:none; }
+.info-tooltip {
+  display:none; position:absolute;
+  bottom:calc(100% + 8px); left:0;
+  background:var(--ink); color:#fff;
+  font-size:0.72rem; line-height:1.55; font-weight:400;
+  padding:10px 13px; border-radius:var(--r);
+  width:240px; z-index:500;
+  box-shadow:0 4px 20px rgba(0,0,0,0.25);
+  text-transform:none; letter-spacing:0;
+  pointer-events:none;
+}
+.info-tooltip::after {
+  content:''; position:absolute; top:100%; left:10px;
+  border:5px solid transparent; border-top-color:var(--ink);
+}
+.info-btn:hover .info-tooltip,
+.info-btn.open  .info-tooltip { display:block; }
+
+/* scale */
+.scale-wrap { display:flex; align-items:center; gap:8px; }
+.scale-ends {
+  font-size:0.6rem; letter-spacing:0.06em; text-transform:uppercase;
+  color:var(--ink-3); white-space:nowrap; flex-shrink:0; line-height:1;
+  font-family:'Roboto Mono','Courier New',monospace;
+}
+.scale-btns { display:flex; flex:1; gap:4px; }
+.scale-btns label { flex:1; cursor:pointer; }
+.scale-btns label input { display:none; }
+.sc-btn {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:5px; padding:10px 0;
+  border:1px solid var(--rule); border-radius:var(--r);
+  background:var(--paper);
+  transition:border-color 0.15s, background 0.15s;
+  user-select:none;
+}
+.sc-btn:hover { border-color:#aaa; background:#fff; }
+.sc-n   { font-size:0.74rem; font-weight:600; color:var(--ink-3); line-height:1; font-family:'Roboto Mono','Courier New',monospace; }
+.sc-dot { width:6px; height:6px; border-radius:50%; background:var(--rule); transition:background 0.15s; }
+
+/* checked */
+.scale-btns label:has(input:checked) .sc-btn.neg-btn { background:#FEF1F1; border-color:var(--neg); }
+.scale-btns label:has(input:checked) .sc-btn.neg-btn .sc-n   { color:var(--neg); }
+.scale-btns label:has(input:checked) .sc-btn.neg-btn .sc-dot { background:var(--neg); }
+.scale-btns label:has(input:checked) .sc-btn.zero-btn { background:#F5F5F5; border-color:var(--zero); }
+.scale-btns label:has(input:checked) .sc-btn.zero-btn .sc-n   { color:var(--zero); }
+.scale-btns label:has(input:checked) .sc-btn.zero-btn .sc-dot { background:var(--zero); }
+.scale-btns label:has(input:checked) .sc-btn.pos-btn { background:#EDFBF2; border-color:var(--pos); }
+.scale-btns label:has(input:checked) .sc-btn.pos-btn .sc-n   { color:var(--pos); }
+.scale-btns label:has(input:checked) .sc-btn.pos-btn .sc-dot { background:var(--pos); }
+
+/* ── COMMENTS ── */
+.divider  { height:1px; background:var(--rule); margin:4px 36px 0; }
+.cmt-area { padding:18px 36px 30px; }
+.cmt-lbl  {
+  display:block; font-size:0.7rem; font-weight:700;
+  text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-3); margin-bottom:8px;
+}
+.cmt-lbl em { font-weight:300; font-style:italic; text-transform:none; letter-spacing:0; font-size:0.68rem; color:#bbb; }
+textarea {
+  width:100%; border:1px solid var(--rule); border-radius:var(--r);
+  padding:11px 13px; font-family:inherit; font-size:0.88rem;
+  color:var(--ink); background:var(--paper); resize:vertical; min-height:74px;
+  outline:none; transition:border-color 0.2s, box-shadow 0.2s;
+}
+textarea:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(8,117,249,0.1); }
+
+/* ── NAV ── */
+.nav-row {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-top:24px; gap:12px;
+}
+.btn {
+  font-family:inherit; font-size:0.88rem; font-weight:600;
+  padding:11px 28px; border-radius:var(--r); border:none; cursor:pointer;
+  transition:all 0.18s ease; letter-spacing:0.01em;
+}
+.btn-prev   { background:transparent; border:1px solid var(--rule); color:var(--ink-3); }
+.btn-prev:hover { border-color:#999; color:var(--ink); }
+.btn-next   { background:var(--ink); color:#fff; margin-left:auto; }
+.btn-next:hover { background:#333; }
+.btn-start  { background:var(--ink); color:#fff; font-size:0.9rem; padding:12px 36px; }
+.btn-start:hover { background:#333; }
+.btn-submit { background:var(--accent); color:#fff; margin-left:auto; }
+.btn-submit:hover { background:#055ed4; }
+
+.req-msg {
+  font-size:0.68rem; font-weight:600; letter-spacing:0.04em;
+  color:var(--neg); display:none;
+  font-family:'Roboto Mono','Courier New',monospace;
+}
+.req-msg.show { display:block; }
+
+/* ── SUCCESS ── */
+.success-card { text-align:center; padding:0; }
+.success-inner { padding:56px 28px 52px; }
+.ok-mark { font-size:2.8rem; color:var(--pos); display:block; margin-bottom:20px; }
+.success-card h2 {
+  font-size:1.9rem; font-weight:700; color:var(--ink);
+  letter-spacing:-0.02em; margin-bottom:12px;
+}
+.success-card .sub {
+  font-size:0.95rem; line-height:1.65; color:var(--ink-2);
+  max-width:460px; margin:0 auto;
+}
+.success-card .venue {
+  display:inline-block; margin-top:22px;
+  background:#EEF5FF; border:1px solid #C0D8FF;
+  border-radius:var(--r); padding:13px 20px;
+  font-size:0.88rem; font-weight:600; color:var(--accent);
+  letter-spacing:0.01em;
+}
+.btn-restart {
+  display:inline-block; margin-top:28px;
+  font-family:inherit; font-size:0.86rem; font-weight:600;
+  padding:10px 26px; border-radius:var(--r);
+  border:1px solid var(--rule); background:transparent;
+  color:var(--ink); cursor:pointer; transition:all 0.18s;
+}
+.btn-restart:hover { background:var(--ink); color:#fff; }
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+  main { padding:20px 12px 0; }
+  .intro-body, .sponsor-strip, .seg-bar,
+  .ratings-area, .cmt-area { padding-left:20px; padding-right:20px; }
+  .intro-eyebrow { padding:8px 20px; }
+  .divider { margin:0 20px; }
+}
+
+@media(max-width:480px){
+  body { padding-bottom:110px; }
+  header { padding:10px 14px; gap:12px; }
+  .h-logo img { height:26px; }
+
+  main { padding:14px 0 0; }
+
+  .card,.intro-card,.success-card {
+    border-left:none; border-right:none;
+    border-radius:0; box-shadow:none;
+  }
+
+  /* intro */
+  .intro-eyebrow { padding:8px 16px; flex-direction:column; gap:2px; }
+  .intro-body    { padding:28px 16px 24px; }
+  .intro-title   { font-size:2.3rem; margin-bottom:22px; }
+  .intro-text    { font-size:0.91rem; }
+
+  /* loads: single column, row layout */
+  .loads-block { grid-template-columns:1fr; }
+  .load-cell {
+    flex-direction:row; text-align:left; padding:22px 16px; gap:18px; align-items:center;
+  }
+  .load-cell img { width:64px; height:64px; flex-shrink:0; }
+  .load-cell-label { font-size:0.95rem; }
+  .load-cell-desc  { font-size:0.7rem; max-width:none; }
+  .load-cell-text  { display:flex; flex-direction:column; gap:4px; }
+
+  /* sponsor: stack with clear gap between nyu and the rest */
+  .sponsor-strip {
+    flex-direction:column; align-items:flex-start;
+    padding:18px 16px; gap:18px;
+  }
+  .sp-right {
+    flex-direction:column; align-items:flex-start; gap:12px;
+    width:100%; padding-top:14px;
+    border-top:1px solid var(--rule);
+  }
+  .sp-right img { height:20px; }
+  .sp-left img  { height:26px; }
+
+  /* segment */
+  .seg-bar { padding:14px 16px; flex-direction:column; gap:3px; align-items:flex-start; }
+  .ratings-area { padding:18px 16px 4px; }
+  .rating-row   { margin-bottom:22px; }
+
+  .scale-ends { display:none; }
+  .scale-wrap { gap:0; }
+  .scale-btns { gap:3px; }
+  .sc-btn { padding:10px 0; gap:4px; }
+  .sc-n   { font-size:0.66rem; }
+  .sc-dot { width:5px; height:5px; }
+
+  .divider  { margin:0 16px; }
+  .cmt-area { padding:14px 16px 22px; }
+
+  /* nav */
+  .nav-row { flex-wrap:wrap; padding:0 12px; gap:10px; }
+  .btn-prev, .btn-next, .btn-start, .btn-submit {
+    flex:1; min-width:0; text-align:center;
+    padding:13px 12px; font-size:0.86rem;
+  }
+  .btn-next,.btn-submit,.btn-start { margin-left:0; }
+  #req-msg { width:100%; text-align:center; }
+
+  .success-inner { padding:40px 16px 44px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="h-logo"><img src="Sys_TT.png" alt="Systematica — Transform Transport"/></div>
+  <div class="h-divider"></div>
+  <div class="h-prog">
+    <div class="h-prog-lbl">Section <span id="prog-lbl">—</span> of 12</div>
+    <div class="h-bar-bg"><div class="h-bar-fill" id="prog-bar" style="width:0%"></div></div>
+  </div>
+</header>
+
+<main>
+<div id="form-container">
+
+  <!-- ══ INTRO ══ -->
+  <div class="intro-card active" id="section-intro">
+    <div class="intro-eyebrow">
+      <span>NYC Open Data Week 2026 &nbsp;·&nbsp;</span>
+      <strong>Walk the Data — Route 1</strong>
+    </div>
+    <div class="intro-body">
+      <h1 class="intro-title">Walk the<br/><em>Data</em></h1>
+      <div class="intro-text">
+        <p>Mobility can be reframed as cumulative experience, influenced by a variety of environmental, temporal and societal conditions.</p>
+        <p>We can begin to imagine User Experience as a set of interrelated experiential components, each with a specific demand or generated load on users.</p>
+      </div>
+    </div>
+
+    <div class="loads-block">
+      <div class="load-cell">
+        <img src="Cognitive.png" alt="Cognitive"/>
+        <div class="load-cell-text">
+          <span class="load-cell-label">Cognitive</span>
+          <span class="load-cell-desc">Mental effort, navigation &amp; decision-making</span>
+        </div>
+      </div>
+      <div class="load-cell">
+        <img src="Sensory.png" alt="Sensory"/>
+        <div class="load-cell-text">
+          <span class="load-cell-label">Sensory</span>
+          <span class="load-cell-desc">Intensity &amp; quality of environmental input</span>
+        </div>
+      </div>
+      <div class="load-cell">
+        <img src="Physical.png" alt="Physical"/>
+        <div class="load-cell-text">
+          <span class="load-cell-label">Physical</span>
+          <span class="load-cell-desc">Bodily exertion for completing a mobility task</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sponsor-strip">
+      <div class="sp-left">
+        <div class="sp-with">With the support of</div>
+        <img src="NYU_CUSP.png" alt="NYU Tandon — Center for Urban Science + Progress"/>
+      </div>
+      <div class="sp-right">
+        <img src="NYC_Open_Data.png" alt="NYC OpenData"/>
+        <img src="Open_Data_Week.png" alt="Open Data Week 2026"/>
+      </div>
+    </div>
+  </div><!-- /intro -->
+
+  <!-- segment cards injected by JS -->
+
+</div><!-- /form-container -->
+
+<!-- SUCCESS -->
+<div class="success-card" id="success-screen">
+  <div class="success-inner">
+    <span class="ok-mark">✓</span>
+    <h2>Thank you!</h2>
+    <p class="sub">You have completed the Walk the Data activity.<br/>Your responses for all 12 segments have been recorded.</p>
+    <div class="venue">Part 2 of the workshop takes place inside the NYU CUSP building.</div>
+    <br/>
+    <button class="btn-restart" onclick="restartForm()">Submit another response</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav-row" id="nav-row">
+  <button class="btn btn-prev" id="btn-prev" style="visibility:hidden" onclick="navigate(-1)">← Back</button>
+  <div><div class="req-msg" id="req-msg">Please rate all three loads before continuing.</div></div>
+  <button class="btn btn-start" id="btn-next" onclick="navigate(1)">Begin →</button>
+</div>
+</main>
+
+<script>
+const TOTAL = 12;
+const STORAGE_KEY_DATA = 'wtd_formdata';
+const STORAGE_KEY_POS  = 'wtd_position';
+
+// Sensory = circles (Sensory.png), Physical = lightning (Physical.png)
+const LOADS = [
+  { key:'cognitive', label:'Cognitive Load', icon:'Cognitive.png',
+    desc:'The Cognitive Load is the mental effort required to process information, navigate environments, and make decisions.' },
+  { key:'sensory',   label:'Sensory Load',   icon:'Sensory.png',
+    desc:'The Sensory Load is the intensity and quality of sensory input experienced in the environment.' },
+  { key:'physical',  label:'Physical Load',  icon:'Physical.png',
+    desc:'The Physical Load is bodily exertion required to complete a mobility task.' },
+];
+const VALS = [-3,-2,-1,0,1,2,3];
+
+// ── Restore saved state ────────────────────────────
+let formData = Array.from({length:TOTAL}, ()=>({cognitive:null,sensory:null,physical:null,comments:''}));
+let current = -1;
+
+try {
+  const savedData = localStorage.getItem(STORAGE_KEY_DATA);
+  const savedPos  = localStorage.getItem(STORAGE_KEY_POS);
+  if (savedData) formData = JSON.parse(savedData);
+  if (savedPos !== null) current = parseInt(savedPos);
+} catch(e) { /* localStorage unavailable */ }
+
+// ── Build segment cards ────────────────────────────
+const container = document.getElementById('form-container');
+for (let s = 0; s < TOTAL; s++) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.id = `section-${s}`;
+
+  let html = `
+    <div class="seg-bar">
+      <span class="seg-num">Segment ${String(s+1).padStart(2,'0')} / ${TOTAL}</span>
+      <span class="seg-name">Segment ${s+1}</span>
+    </div>
+    <div class="ratings-area">`;
+
+  LOADS.forEach(l => {
+    html += `
+      <div class="rating-row">
+        <div class="rating-head">
+          <div class="r-icon"><img src="${l.icon}" alt="${l.label}"/></div>
+          <span class="rating-name">${l.label}</span>
+          <button class="info-btn" type="button" onclick="toggleInfo(this)" aria-label="About ${l.label}">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <circle cx="5" cy="5" r="4.5" stroke="#888"/>
+              <text x="5" y="8.2" text-anchor="middle" font-family="serif" font-size="7" fill="#888">i</text>
+            </svg>
+            <div class="info-tooltip">${l.desc}</div>
+          </button>
+        </div>
+        <div class="scale-wrap">
+          <span class="scale-ends">−</span>
+          <div class="scale-btns">`;
+    VALS.forEach(v => {
+      const cls = v < 0 ? 'neg-btn' : v > 0 ? 'pos-btn' : 'zero-btn';
+      const lbl = v > 0 ? `+${v}` : `${v}`;
+      const checked = formData[s][l.key] === v ? 'checked' : '';
+      html += `<label>
+        <input type="radio" name="s${s}_${l.key}" value="${v}" ${checked} onchange="rec(${s},'${l.key}',${v})">
+        <div class="sc-btn ${cls}"><span class="sc-n">${lbl}</span><span class="sc-dot"></span></div>
+      </label>`;
+    });
+    html += `</div><span class="scale-ends">+</span></div></div>`;
+  });
+
+  const savedCmt = formData[s].comments || '';
+  html += `</div>
+    <div class="divider"></div>
+    <div class="cmt-area">
+      <label class="cmt-lbl" for="c${s}">Comments &amp; Notes <em>— optional</em></label>
+      <textarea id="c${s}" placeholder="Observations, details, anything worth noting…" oninput="recCmt(${s},this.value)">${savedCmt}</textarea>
+    </div>`;
+
+  card.innerHTML = html;
+  container.appendChild(card);
+}
+
+// ── Restore visual state ───────────────────────────
+function restoreView() {
+  // Hide intro by default; show correct card
+  document.getElementById('section-intro').classList.remove('active');
+  if (current === -1) {
+    document.getElementById('section-intro').classList.add('active');
+  } else if (current >= 0 && current < TOTAL) {
+    document.getElementById(`section-${current}`).classList.add('active');
+  }
+  updateUI();
+}
+
+// ── Persistence helpers ────────────────────────────
+function saveProgress() {
+  try {
+    localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(formData));
+    localStorage.setItem(STORAGE_KEY_POS,  current);
+  } catch(e) {}
+}
+
+// ── Data recording ─────────────────────────────────
+function rec(s, k, v)  { formData[s][k] = v; saveProgress(); }
+function recCmt(s, v)  { formData[s].comments = v; saveProgress(); }
+
+// ── Info tooltip toggle ────────────────────────────
+function toggleInfo(btn) {
+  const wasOpen = btn.classList.contains('open');
+  document.querySelectorAll('.info-btn.open').forEach(b => b.classList.remove('open'));
+  if (!wasOpen) btn.classList.add('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.info-btn'))
+    document.querySelectorAll('.info-btn.open').forEach(b => b.classList.remove('open'));
+});
+
+// ── Navigation ─────────────────────────────────────
+function navigate(dir) {
+  if (dir === 1 && current >= 0) {
+    const d = formData[current];
+    if (d.cognitive === null || d.sensory === null || d.physical === null) {
+      document.getElementById('req-msg').classList.add('show'); return;
+    }
+    document.getElementById('req-msg').classList.remove('show');
+  }
+
+  // Hide current
+  if (current === -1) document.getElementById('section-intro').classList.remove('active');
+  else { const el = document.getElementById(`section-${current}`); if(el) el.classList.remove('active'); }
+
+  current += dir;
+  if (current >= TOTAL) { submitForm(); return; }
+  current = Math.max(-1, current);
+
+  if (current === -1) document.getElementById('section-intro').classList.add('active');
+  else document.getElementById(`section-${current}`).classList.add('active');
+
+  saveProgress();
+  updateUI();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function updateUI() {
+  const bar  = document.getElementById('prog-bar');
+  const lbl  = document.getElementById('prog-lbl');
+  const prev = document.getElementById('btn-prev');
+  const next = document.getElementById('btn-next');
+  if (current === -1) {
+    bar.style.width = '0%'; lbl.textContent = '—';
+    prev.style.visibility = 'hidden';
+    next.textContent = 'Begin →'; next.className = 'btn btn-start';
+  } else {
+    bar.style.width = `${((current+1)/TOTAL)*100}%`;
+    lbl.textContent = current + 1;
+    prev.style.visibility = 'visible';
+    next.textContent = current === TOTAL-1 ? 'Submit ✓' : 'Next →';
+    next.className   = current === TOTAL-1 ? 'btn btn-submit' : 'btn btn-next';
+  }
+}
+
+function submitForm() {
+  container.style.display = 'none';
+  document.getElementById('nav-row').style.display = 'none';
+  document.getElementById('success-screen').classList.add('active');
+
+  const payload = { route:1, timestamp:new Date().toISOString(), segments:formData };
+  console.log('Submission:', JSON.stringify(payload, null, 2));
+
+  // ── Send to Google Sheets (uncomment after Apps Script setup) ──
+  // fetch('YOUR_APPS_SCRIPT_URL', {
+  //   method:'POST',
+  //   body: JSON.stringify(payload),
+  //   headers:{'Content-Type':'application/json'}
+  // });
+
+  // Clear localStorage after successful submit
+  try {
+    localStorage.removeItem(STORAGE_KEY_DATA);
+    localStorage.removeItem(STORAGE_KEY_POS);
+  } catch(e) {}
+}
+
+function restartForm() {
+  try {
+    localStorage.removeItem(STORAGE_KEY_DATA);
+    localStorage.removeItem(STORAGE_KEY_POS);
+  } catch(e) {}
+  location.reload();
+}
+
+// ── Init ───────────────────────────────────────────
+restoreView();
+</script>
+</body>
+</html>
